@@ -1,0 +1,47 @@
+ABOUT RENTSMART
+
+RentSmart is a rental platform that helps users find rental properties
+and allows property owners to list and manage their properties.
+
+ACCOUNT
+
+Users can create an account by registering with their name, email,
+and password. After registration, users can log in and manage their profile.
+
+FINDING PROPERTIES
+
+Users can search for properties using the property search page.
+Users can use filters to narrow results based on available property
+information such as location, price, and property type.
+
+LISTING A PROPERTY
+
+Property owners can list a property by opening the List Property section,
+entering the required property details, adding images, and submitting
+the listing.
+
+BOOKING
+
+Users can select an available property and proceed through the booking
+process from the property details page.
+
+PAYMENTS
+
+Users can make rental or booking payments through the payment options
+provided by RentSmart. Payment confirmation is displayed after a
+successful transaction.
+
+CANCELLATION
+
+Users can cancel a booking from the booking section when cancellation
+is permitted according to the applicable booking policy.
+
+SUPPORT
+
+Users can report problems or request help through the RentSmart support
+section.
+
+PRIVACY
+
+RentSmart users should keep their account credentials private and should
+not share their passwords with other users.
