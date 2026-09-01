@@ -209,19 +209,69 @@
     });
 
     // ---- Messages ----------------------------------------------------
-    function addMessage(text, sender) {
-      // sender: 'user' | 'bot' | 'error'
-      var bubble = el('div', {
-        class: 'rsai-message rsai-message-' + sender,
-        text: text, // textContent only — never innerHTML
-      });
-      var wrapper = el('div', { class: 'rsai-message-row rsai-row-' + sender }, [
-        bubble,
-      ]);
-      messagesEl.appendChild(wrapper);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return wrapper;
+
+    function renderMarkdown(text) {
+  var fragment = document.createDocumentFragment();
+
+  var lines = text.split('\n');
+
+  lines.forEach(function (line, index) {
+
+    // Add spacing between lines
+    if (index > 0) {
+      fragment.appendChild(document.createElement('br'));
     }
+
+    // Handle bold: **text**
+    var parts = line.split(/(\*\*[^*]+\*\*)/g);
+
+    parts.forEach(function (part) {
+
+      if (part.startsWith('**') && part.endsWith('**')) {
+
+        var bold = document.createElement('strong');
+
+        bold.textContent = part.slice(2, -2);
+
+        fragment.appendChild(bold);
+
+      } else {
+
+        fragment.appendChild(
+          document.createTextNode(part)
+        );
+
+      }
+
+    });
+  });
+
+  return fragment;
+}
+
+   function addMessage(text, sender) {
+
+  var bubble = el('div', {
+    class: 'rsai-message rsai-message-' + sender
+  });
+
+  if (sender === 'bot') {
+    bubble.appendChild(renderMarkdown(text));
+  } else {
+    bubble.textContent = text;
+  }
+
+  var wrapper = el('div', {
+    class: 'rsai-message-row rsai-row-' + sender
+  }, [
+    bubble,
+  ]);
+
+  messagesEl.appendChild(wrapper);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  return wrapper;
+}
 
     function showTypingIndicator() {
       var indicator = el('div', { class: 'rsai-message-row rsai-row-bot rsai-typing-row' }, [
