@@ -1,0 +1,382 @@
+/**
+ * RentSmart Chatbot Widget — styles
+ * All selectors are scoped under .rsai-widget so nothing here can leak
+ * into (or be affected by) the host website. This file is loaded inside
+ * the widget's Shadow DOM by chatbot.js.
+ */
+
+.rsai-widget {
+  --rsai-primary: #2563eb;
+  --rsai-primary-dark: #1d4ed8;
+  --rsai-bg: #ffffff;
+  --rsai-surface: #f6f8fb;
+  --rsai-border: #e5e9f0;
+  --rsai-text: #1f2430;
+  --rsai-text-muted: #6b7280;
+  --rsai-user-bubble: #2563eb;
+  --rsai-user-text: #ffffff;
+  --rsai-bot-bubble: #f1f3f8;
+  --rsai-bot-text: #1f2430;
+  --rsai-error-bubble: #fdecec;
+  --rsai-error-text: #9b1c1c;
+  --rsai-radius: 16px;
+  --rsai-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  position: fixed;
+  z-index: 2147483000;
+  bottom: 24px;
+  right: 24px;
+  font-family: var(--rsai-font);
+  color: var(--rsai-text);
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.rsai-widget * {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------
+   Floating toggle button
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-toggle-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--rsai-primary), var(--rsai-primary-dark));
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rsai-widget .rsai-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.45);
+}
+
+.rsai-widget .rsai-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.rsai-widget .rsai-toggle-btn .rsai-icon {
+  width: 26px;
+  height: 26px;
+  color: #fff;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.rsai-widget .rsai-toggle-btn .rsai-icon-chat {
+  position: absolute;
+}
+
+.rsai-widget .rsai-toggle-btn .rsai-toggle-close-icon {
+  position: absolute;
+  opacity: 0;
+  transform: rotate(-45deg) scale(0.6);
+}
+
+.rsai-widget.rsai-open .rsai-toggle-btn .rsai-icon-chat {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
+.rsai-widget.rsai-open .rsai-toggle-btn .rsai-toggle-close-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* ---------------------------------------------------------------------
+   Chat window
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-window {
+  position: absolute;
+  bottom: 76px;
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  height: 520px;
+  max-height: calc(100vh - 140px);
+  background: var(--rsai-bg);
+  border-radius: var(--rsai-radius);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.rsai-widget.rsai-open .rsai-window {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------
+   Header
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--rsai-primary), var(--rsai-primary-dark));
+  color: #fff;
+}
+
+.rsai-widget .rsai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rsai-widget .rsai-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.rsai-widget .rsai-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  flex: 0 0 auto;
+}
+
+.rsai-widget .rsai-close-btn {
+  border: none;
+  background: transparent;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.rsai-widget .rsai-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+.rsai-widget .rsai-close-btn .rsai-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------------------------------------------------------------------
+   Message area
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--rsai-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rsai-widget .rsai-message-row {
+  display: flex;
+  width: 100%;
+}
+
+.rsai-widget .rsai-row-user {
+  justify-content: flex-end;
+}
+
+.rsai-widget .rsai-row-bot,
+.rsai-widget .rsai-row-error {
+  justify-content: flex-start;
+}
+
+.rsai-widget .rsai-message {
+  max-width: 80%;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.rsai-widget .rsai-message-user {
+  background: var(--rsai-user-bubble);
+  color: var(--rsai-user-text);
+  border-bottom-right-radius: 4px;
+}
+
+.rsai-widget .rsai-message-bot {
+  background: var(--rsai-bot-bubble);
+  color: var(--rsai-bot-text);
+  border-bottom-left-radius: 4px;
+}
+
+.rsai-widget .rsai-message-error {
+  background: var(--rsai-error-bubble);
+  color: var(--rsai-error-text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Typing indicator */
+
+.rsai-widget .rsai-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.rsai-widget .rsai-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rsai-text-muted);
+  opacity: 0.6;
+  animation: rsai-blink 1.2s infinite ease-in-out;
+}
+
+.rsai-widget .rsai-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.rsai-widget .rsai-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes rsai-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Input row
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-input-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--rsai-bg);
+  border-top: 1px solid var(--rsai-border);
+}
+
+.rsai-widget .rsai-input {
+  flex: 1 1 auto;
+  border: 1px solid var(--rsai-border);
+  border-radius: 22px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--rsai-font);
+  color: var(--rsai-text);
+  background: var(--rsai-surface);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rsai-widget .rsai-input:focus {
+  border-color: var(--rsai-primary);
+  background: var(--rsai-bg);
+}
+
+.rsai-widget .rsai-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rsai-widget .rsai-send-btn {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: var(--rsai-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.rsai-widget .rsai-send-btn:hover {
+  background: var(--rsai-primary-dark);
+}
+
+.rsai-widget .rsai-send-btn:active {
+  transform: scale(0.95);
+}
+
+.rsai-widget .rsai-send-btn.rsai-disabled,
+.rsai-widget .rsai-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rsai-widget .rsai-send-btn .rsai-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------------------------------------------------------------------
+   Scrollbar polish (optional, harmless if unsupported)
+--------------------------------------------------------------------- */
+
+.rsai-widget .rsai-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rsai-widget .rsai-messages::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------------
+   Responsive: small screens
+--------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .rsai-widget {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .rsai-widget .rsai-window {
+    width: calc(100vw - 24px);
+    height: calc(100vh - 120px);
+    bottom: 72px;
+    right: -8px;
+  }
+}
