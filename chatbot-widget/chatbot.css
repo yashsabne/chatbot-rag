@@ -1,10 +1,4 @@
-/**
- * RentSmart Chatbot Widget — styles
- * All selectors are scoped under .rsai-widget so nothing here can leak
- * into (or be affected by) the host website. This file is loaded inside
- * the widget's Shadow DOM by chatbot.js.
- */
-
+ 
 .rsai-widget {
   --rsai-primary: #2563eb;
   --rsai-primary-dark: #1d4ed8;
