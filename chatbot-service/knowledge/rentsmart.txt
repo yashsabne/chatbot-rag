@@ -1,47 +1,258 @@
 ABOUT RENTSMART
 
-RentSmart is a rental platform that helps users find rental properties
-and allows property owners to list and manage their properties.
+RentSmart v2 is a property rental and sale platform built as a containerized microservices application. The frontend is a React 19 + Vite single-page application. Backend responsibilities are separated into independent services for authentication, properties, payments, notifications, activity tracking, real-time messaging, and Redis-based caching, sessions, and rate limiting.
 
-ACCOUNT
+The architecture is designed so individual business domains can be developed, deployed, and scaled independently.
 
-Users can create an account by registering with their name, email,
-and password. After registration, users can log in and manage their profile.
 
-FINDING PROPERTIES
+ACCOUNT AND AUTHENTICATION
 
-Users can search for properties using the property search page.
-Users can use filters to narrow results based on available property
-information such as location, price, and property type.
+Users can register for a RentSmart account with email verification.
 
-LISTING A PROPERTY
+Users can log in using JWT authentication and can log out. Logout blacklists the JWT through the Redis service.
 
-Property owners can list a property by opening the List Property section,
-entering the required property details, adding images, and submitting
-the listing.
+RentSmart supports Google OAuth login.
 
-BOOKING
+Users can request a password reset using a secure email token and can then set a new password.
 
-Users can select an available property and proceed through the booking
-process from the property details page.
+Users can resend verification emails and check whether their email has been verified.
+
+Email verification is required before creating property listings or making payments.
+
+Users can view their account information and recently viewed properties.
+
+
+PROPERTY SEARCH AND DISCOVERY
+
+The RentSmart home page provides property discovery and search.
+
+Users can search and filter property listings. Search supports full-text matching across listing title, description, and address, including fuzzy matching.
+
+Users can view the latest listings without logging in.
+
+RentSmart provides similar-property results and personalized recommendations.
+
+Personalized ranking can use interaction history such as property views, saves, contacts, and shares. More recent interactions receive greater weight.
+
+Promoted listings can receive a boost in search ranking.
+
+
+PROPERTY LISTINGS
+
+Verified users can create property listings.
+
+A listing can contain up to 8 property photos. Images are stored using Cloudinary.
+
+Users can view property details.
+
+Property owners can update or delete their listings and can access their own listings through the dashboard.
+
+Users can share property listings through trackable links and save properties to a saved-properties/wishlist area.
+
+While creating a listing, the frontend automatically saves a draft in the browser. The draft is restored if the user leaves and returns later. Draft saving is debounced and does not require backend requests.
+
+After a listing is successfully published, the saved draft is cleared.
+
+
+PROPERTY DETAILS AND CONTACT ACCESS
+
+The property details page provides full listing information.
+
+Property contact information can be unlocked through the payment service.
+
+After a successful verified payment, contact access is granted for the relevant property.
+
+The payment service can trigger email notifications to the relevant parties through the notification service.
+
 
 PAYMENTS
 
-Users can make rental or booking payments through the payment options
-provided by RentSmart. Payment confirmation is displayed after a
-successful transaction.
+RentSmart uses Razorpay for supported payment flows.
 
-CANCELLATION
+The payment service handles property contact-unlock payments and listing promotion payments.
 
-Users can cancel a booking from the booking section when cancellation
-is permitted according to the applicable booking policy.
+The server enforces the payment amount so the client cannot change the amount being charged.
+
+Razorpay payment signatures are verified server-side using HMAC-SHA256.
+
+Users can check whether they have paid for a property's contact information.
+
+Users can view payment history and spending summaries.
+
+Payment receipts and contact-reveal notifications are sent through the notification service.
+
+
+LISTING PROMOTION
+
+Property owners can promote listings through a Razorpay payment flow.
+
+After successful payment verification, a listing is marked as promoted and receives a promotion expiry.
+
+Promoted listings can receive increased visibility in property search ranking.
+
+
+SAVED PROPERTIES
+
+Users can save or bookmark properties.
+
+Saved properties are associated with the user and property.
+
+Users can access their saved-properties/wishlist area from the frontend.
+
+
+DASHBOARD
+
+The RentSmart dashboard provides listing-related statistics and account functionality.
+
+Users can access and manage their own listings.
+
+The dashboard includes the messaging area for conversations with property owners or property seekers.
+
+Recently viewed properties are tracked per user.
+
+
+REAL-TIME CHAT
+
+RentSmart has a dedicated real-time chat service for communication between property seekers and property owners.
+
+The chat service uses Socket.IO.
+
+Users can create and manage conversations and view message history.
+
+Messages have delivery states such as sent, delivered, and read.
+
+The chat system supports typing indicators and online-user tracking.
+
+Chat socket connections are authenticated using JWT.
+
+Conversation identifiers use slugs generated with nanoid.
+
+
+NOTIFICATIONS
+
+RentSmart has a dedicated notification service for transactional email delivery.
+
+The notification service uses the Brevo API.
+
+It handles email for email verification, password reset, payment receipts, and contact-reveal notifications.
+
+The notification service is stateless and is called internally by other services.
+
+
+ACTIVITY AND AUDIT HISTORY
+
+RentSmart has a centralized activity service.
+
+The service records user activity events from different parts of the platform, including logins, listing changes, payments, and chat events.
+
+Activity history can be retrieved for a user.
+
+The activity service is used for analytics and audit trails and can support future trust-scoring functionality.
+
+
+REDIS
+
+RentSmart uses Redis through a dedicated Redis microservice instead of having each service connect directly to Redis.
+
+The Redis service provides cache get/set/delete operations, pattern-based cache deletion, session creation/retrieval/destruction, and rate-limit checking/resetting.
+
+Redis is used for JWT blacklisting after logout, rate limiting, caching, and session storage.
+
+Other services communicate with the Redis service through internal HTTP requests.
+
+
+MICROSERVICES
+
+RentSmart v2 separates major business domains into independent services.
+
+The Auth Service handles registration, login, email verification, Google OAuth, password reset, JWT handling, and recently viewed properties.
+
+The Property Service handles property listing CRUD, image uploads, search, filtering, recommendations, saved properties, listing sharing, and interaction tracking.
+
+The Payment Service handles Razorpay orders, payment verification, contact unlocking, listing promotion, payment history, and spending summaries.
+
+The Notification Service handles transactional emails through Brevo.
+
+The Activity Service handles centralized user activity logging and retrieval.
+
+The Chat Service handles real-time Socket.IO messaging between users.
+
+The Redis Service provides centralized caching, sessions, JWT blacklist storage, and rate limiting.
+
+The services use MongoDB/Mongoose for persistent data where applicable. Docker and Docker Compose are used for containerization and orchestration.
+
+
+FRONTEND
+
+The RentSmart frontend is a React 19 single-page application built with Vite.
+
+React Router DOM is used for client-side routing.
+
+The frontend uses Tailwind CSS for styling and Socket.IO Client for real-time chat.
+
+The application includes pages/features for home, registration, login, dashboard, messages, saved properties, property details, property search, create listing, edit property, email verification, forgot password, reset password, developer/about information, and help/support.
+
+The frontend is deployed on Vercel.
+
+
+SECURITY
+
+RentSmart uses JWT authentication.
+
+Passwords are hashed using bcryptjs.
+
+Email verification is required before creating listings or making payments.
+
+Rate limiting is applied to registration and login through the Redis service.
+
+Internal service-to-service endpoints are protected using an internal secret header.
+
+Payment amounts are enforced server-side.
+
+Razorpay signatures are verified server-side using HMAC-SHA256.
+
+Secrets are configured through environment variables rather than hardcoded in application code.
+
+CORS is configured using allowed origins.
+
+User activity is centrally logged.
+
+
+DEPLOYMENT AND CI/CD
+
+RentSmart uses Docker and Docker Compose to orchestrate its services.
+
+The frontend is deployed on Vercel.
+
+Backend services are deployed on Render.
+
+GitHub Actions provides a path-filtered CI/CD pipeline. When changes are pushed to the main branch, the workflow detects which service directories changed and deploys only the affected services through Render deploy hooks.
+
+The project also includes k6 load testing for the property search/filter endpoint.
+
+
+CURRENT PROJECT STATUS
+
+The project includes microservices architecture, authentication and Google OAuth, property CRUD and image uploads, property search and filtering, personalized recommendations, Razorpay payments, listing promotion, saved properties, real-time chat, activity logging, email notifications, a Redis microservice, listing draft auto-save, Docker Compose, Vercel frontend deployment, Render backend deployment, GitHub Actions CI/CD, and property-search load testing.
+
+The repository also lists additional capabilities as in progress or planned, including Microsoft OAuth frontend integration, admin/moderation tools, advanced recommendations, property analytics, suspicious-activity monitoring, trust/reputation scoring, emergency-contact features, API-gateway rate limiting, full observability, and Kubernetes deployment.
+
 
 SUPPORT
 
-Users can report problems or request help through the RentSmart support
-section.
+RentSmart includes a Help page for support and assistance.
 
-PRIVACY
+The application also provides developer/about information.
 
-RentSmart users should keep their account credentials private and should
-not share their passwords with other users.
+
+AI CHATBOT
+
+RentSmart has an independently deployed RAG-based AI chatbot service.
+
+The chatbot uses a separate embeddable JavaScript widget, so the chatbot frontend does not need to be implemented directly inside the RentSmart React application.
+
+The chatbot backend uses document chunks, embeddings, vector similarity retrieval, and an LLM to answer questions using RentSmart-specific context.
+
+The chatbot is intended for questions about RentSmart features, navigation, account functionality, property listings, payments, messaging, support, and other information documented in this knowledge base.
+
+The chatbot must not invent policies, prices, payment rules, or features that are not documented here. If information is not available in this knowledge base, the assistant should say that it does not have that information.
