@@ -66,5 +66,8 @@ export async function retrieve(question, topK = 3) {
     results.sort((a, b) => b.score - a.score);
 
     // Return only the best chunks
+
+    console.log(results,"similarity")
+
     return results.slice(0, topK);
 }
