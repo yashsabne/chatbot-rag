@@ -1,35 +1,10 @@
-/**
- * RentSmart Chatbot Widget
- * -------------------------------------------------------------------------
- * A dependency-free, embeddable chat widget.
- *
- * Usage (single script tag on any host page):
- *
- *   <script
- *     src="./chatbot.js"
- *     data-api="http://localhost:5007/api/chat"
- *     data-title="RentSmart AI"
- *   ></script>
- *
- * This file ONLY renders UI and talks to the configured API endpoint.
- * It contains no chatbot logic, no API keys, and no hardcoded answers.
- * -------------------------------------------------------------------------
- */
 
 (function () {
   'use strict';
 
-  // -------------------------------------------------------------------
-  // 1. Read configuration from the <script> tag that loaded this file
-  // -------------------------------------------------------------------
-
-  // document.currentScript is only reliable synchronously, so we grab it
-  // immediately at the top of the IIFE.
   var currentScript =
     document.currentScript ||
     (function () {
-      // Fallback for older browsers / edge cases: find our own script tag
-      // by matching the src filename.
       var scripts = document.getElementsByTagName('script');
       for (var i = scripts.length - 1; i >= 0; i--) {
         if (scripts[i].src && scripts[i].src.indexOf('chatbot.js') !== -1) {
@@ -48,8 +23,6 @@
       dataset.welcome || 'Hi! How can I help you today?';
     var placeholder = dataset.placeholder || 'Type your message...';
 
-    // Resolve the CSS file relative to this script's own URL, so the
-    // widget keeps working no matter what path/domain it is hosted on.
     var cssHref = '';
     if (scriptEl && scriptEl.src) {
       try {
@@ -58,7 +31,7 @@
         cssHref = scriptEl.src.replace(/chatbot\.js(\?.*)?$/, 'chatbot.css');
       }
     }
-    // Allow an explicit override via data-css if the host needs it.
+
     if (dataset.css) {
       cssHref = dataset.css;
     }
@@ -75,16 +48,13 @@
   var config = getConfig(currentScript);
 
   if (!config.apiUrl) {
-    // eslint-disable-next-line no-console
+
     console.error(
       '[RentSmart Chatbot] Missing required "data-api" attribute on the ' +
-        'chatbot script tag. The widget will not be able to send messages.'
+      'chatbot script tag. The widget will not be able to send messages.'
     );
   }
 
-  // -------------------------------------------------------------------
-  // 2. Small DOM helper (avoids innerHTML for anything user-controlled)
-  // -------------------------------------------------------------------
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -106,9 +76,6 @@
     return node;
   }
 
-  // -------------------------------------------------------------------
-  // 3. Build the widget inside an isolated Shadow DOM host
-  // -------------------------------------------------------------------
 
   function initWidget() {
     var host = document.createElement('div');
@@ -117,19 +84,39 @@
 
     var shadow = host.attachShadow
       ? host.attachShadow({ mode: 'open' })
-      : host; // very old browsers: degrade gracefully, no isolation
+      : host;
 
-    var root = el('div', { class: 'rsai-widget' }, []);
+
+    var root = el('div', {
+      class: 'rsai-widget rsai-loading'
+    }, []);
+
     shadow.appendChild(root);
 
-    // Inject the widget's own stylesheet into the shadow root so the
-    // host site's CSS cannot affect it, and vice versa.
-    if (config.cssHref && shadow.appendChild) {
-      var link = el('link', { rel: 'stylesheet', href: config.cssHref });
-      shadow.insertBefore(link, root);
+    function revealWidget() {
+      root.classList.remove('rsai-loading');
     }
 
-    // ---- Floating toggle button -------------------------------------
+    if (config.cssHref && shadow.appendChild) {
+      var link = el('link', {
+        rel: 'stylesheet',
+        href: config.cssHref
+      });
+
+      link.onload = function () {
+        revealWidget();
+      };
+
+      link.onerror = function () {
+        revealWidget();
+      };
+
+      shadow.insertBefore(link, root);
+    } else {
+      revealWidget();
+    }
+
+
     var toggleBtn = el('button', {
       class: 'rsai-toggle-btn',
       type: 'button',
@@ -139,7 +126,6 @@
     toggleBtn.appendChild(buildChatIcon());
     toggleBtn.appendChild(buildCloseIcon('rsai-toggle-close-icon'));
 
-    // ---- Chat window ---------------------------------------------------
     var messagesEl = el('div', {
       class: 'rsai-messages',
       role: 'log',
@@ -188,7 +174,6 @@
     root.appendChild(chatWindow);
     root.appendChild(toggleBtn);
 
-    // ---- State -----------------------------------------------------
     var isOpen = false;
     var isSending = false;
 
@@ -208,70 +193,69 @@
       setOpen(false);
     });
 
-    // ---- Messages ----------------------------------------------------
 
     function renderMarkdown(text) {
-  var fragment = document.createDocumentFragment();
+      var fragment = document.createDocumentFragment();
 
-  var lines = text.split('\n');
+      var lines = text.split('\n');
 
-  lines.forEach(function (line, index) {
+      lines.forEach(function (line, index) {
 
-    // Add spacing between lines
-    if (index > 0) {
-      fragment.appendChild(document.createElement('br'));
+        // Add spacing between lines
+        if (index > 0) {
+          fragment.appendChild(document.createElement('br'));
+        }
+
+        // Handle bold: **text**
+        var parts = line.split(/(\*\*[^*]+\*\*)/g);
+
+        parts.forEach(function (part) {
+
+          if (part.startsWith('**') && part.endsWith('**')) {
+
+            var bold = document.createElement('strong');
+
+            bold.textContent = part.slice(2, -2);
+
+            fragment.appendChild(bold);
+
+          } else {
+
+            fragment.appendChild(
+              document.createTextNode(part)
+            );
+
+          }
+
+        });
+      });
+
+      return fragment;
     }
 
-    // Handle bold: **text**
-    var parts = line.split(/(\*\*[^*]+\*\*)/g);
+    function addMessage(text, sender) {
 
-    parts.forEach(function (part) {
+      var bubble = el('div', {
+        class: 'rsai-message rsai-message-' + sender
+      });
 
-      if (part.startsWith('**') && part.endsWith('**')) {
-
-        var bold = document.createElement('strong');
-
-        bold.textContent = part.slice(2, -2);
-
-        fragment.appendChild(bold);
-
+      if (sender === 'bot') {
+        bubble.appendChild(renderMarkdown(text));
       } else {
-
-        fragment.appendChild(
-          document.createTextNode(part)
-        );
-
+        bubble.textContent = text;
       }
 
-    });
-  });
+      var wrapper = el('div', {
+        class: 'rsai-message-row rsai-row-' + sender
+      }, [
+        bubble,
+      ]);
 
-  return fragment;
-}
+      messagesEl.appendChild(wrapper);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
 
-   function addMessage(text, sender) {
-
-  var bubble = el('div', {
-    class: 'rsai-message rsai-message-' + sender
-  });
-
-  if (sender === 'bot') {
-    bubble.appendChild(renderMarkdown(text));
-  } else {
-    bubble.textContent = text;
-  }
-
-  var wrapper = el('div', {
-    class: 'rsai-message-row rsai-row-' + sender
-  }, [
-    bubble,
-  ]);
-
-  messagesEl.appendChild(wrapper);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-
-  return wrapper;
-}
+      return wrapper;
+    }
 
     function showTypingIndicator() {
       var indicator = el('div', { class: 'rsai-message-row rsai-row-bot rsai-typing-row' }, [
@@ -286,12 +270,10 @@
       return indicator;
     }
 
-    // Welcome message on first render.
     if (config.welcomeMessage) {
       addMessage(config.welcomeMessage, 'bot');
     }
 
-    // ---- Sending -----------------------------------------------------
     function setSendingState(sending) {
       isSending = sending;
       textInput.disabled = sending;
@@ -366,9 +348,6 @@
     });
   }
 
-  // -------------------------------------------------------------------
-  // 4. Inline icon builders (no external icon library / font dependency)
-  // -------------------------------------------------------------------
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -435,10 +414,6 @@
     );
     return svg;
   }
-
-  // -------------------------------------------------------------------
-  // 5. Boot
-  // -------------------------------------------------------------------
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initWidget);

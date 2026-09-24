@@ -1,4 +1,9 @@
  
+.rsai-loading {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 .rsai-widget {
   --rsai-primary: #2563eb;
   --rsai-primary-dark: #1d4ed8;
