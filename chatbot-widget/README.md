@@ -1,5 +1,7 @@
 # RentSmart Chatbot Widget
 
+For the complete backend + widget architecture and the full RAG pipeline, see the [repository README](../README.md).
+
 A lightweight, dependency-free chat widget that can be embedded on **any**
 website with a single `<script>` tag. It provides the floating button, chat
 window, and message UI, and talks to an existing chatbot API over HTTP.
@@ -52,7 +54,7 @@ your page's `<body>`:
 ```html
 <script
   src="https://your-cdn-or-server.com/chatbot-widget/chatbot.js"
-  data-api="http://localhost:5007/api/chat"
+  data-api="http://localhost:5005/api/chat"
   data-title="RentSmart AI"
 ></script>
 ```
@@ -74,7 +76,7 @@ That's it — no other HTML, CSS, or JS is required on the host page.
 ```html
 <script
   src="./chatbot.js"
-  data-api="http://localhost:5007/api/chat"
+  data-api="http://localhost:5005/api/chat"
   data-title="RentSmart AI"
 ></script>
 ```
