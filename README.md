@@ -41,32 +41,7 @@ node index.js
 ```
 
 The script reads `knowledge/rentsmart.txt`, splits the text at double newlines, embeds each non-empty chunk sequentially, and writes the resulting array to `src/data/knowledge.json`. Re-run ingestion whenever the knowledge source changes. The generated JSON is loaded from disk by the retrieval module on each question.
-
-### Question answering (online request)
-
-```mermaid
-sequenceDiagram
-    participant U as Visitor / Widget
-    participant API as Express API
-    participant R as Retriever
-    participant G as Gemini Embeddings
-    participant DB as knowledge.json
-    participant L as Groq LLM
-
-    U->>API: POST /api/chat { message }
-    API->>API: Check non-empty message
-    API->>R: retrieve(message)
-    R->>DB: Read and parse all chunk records
-    R->>G: Embed user question
-    G-->>R: Query vector
-    R->>R: Cosine similarity against each stored vector
-    R->>R: Sort descending; select top 3
-    R-->>API: Relevant text chunks
-    API->>L: Question + retrieved context + grounding instructions
-    L-->>API: Generated answer
-    API-->>U: { answer }
-```
-
+ 
 ## Retrieval and answer generation
 
 1. The incoming question is converted to an embedding using Google's `gemini-embedding-2` model.
@@ -253,18 +228,4 @@ The checked-in widget demo currently references:
 The widget's `data-api` setting allows the backend URL to be changed without modifying widget code. The widget assets must be hosted at a location where `chatbot.js` can load its companion `chatbot.css`.
 
 For the backend deployment, ensure the generated `src/data/knowledge.json` is present in the runtime filesystem before serving chat requests. Run ingestion during deployment/release or otherwise provide the generated file. The source uses local filesystem storage; it does not automatically regenerate missing knowledge data when the API starts.
-
-## Current implementation boundaries
-
-- Chunking is paragraph-based: text is split on double newlines, with no token-based chunk sizing or overlap.
-- Embeddings are generated sequentially during ingestion.
-- Retrieval embeds each user question and compares it against every stored vector.
-- The top 3 chunks are selected by cosine similarity; no similarity threshold is applied in the current retriever.
-- The knowledge index is a local JSON file, not a managed vector store.
-- No conversation history or per-user memory is passed to the generation model; each request is handled using the current question and retrieved chunks.
-- The backend enables CORS globally and currently has no application-level authentication or rate-limiting middleware in `app.js`.
-- The prompt is designed to ground answers in retrieved RentSmart context, but this is an LLM instruction rather than a formal guarantee.
-
-## License
-
-No explicit license file is present in this repository. Unless a license is added, reuse and redistribution should not be assumed to be permitted.
+ 
